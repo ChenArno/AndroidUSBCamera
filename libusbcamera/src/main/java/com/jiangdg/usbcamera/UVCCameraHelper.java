@@ -33,11 +33,12 @@ public class UVCCameraHelper {
     private int previewWidth = 640;
     private int previewHeight = 480;
     // 高分辨率YUV格式帧率较低
-    private static int FRAME_FORMAT_YUYV = UVCCamera.FRAME_FORMAT_YUYV;
+    public static final int FRAME_FORMAT_YUYV = UVCCamera.FRAME_FORMAT_YUYV;
     // 默认使用MJPEG
-    private static int FRAME_FORMAT_MJPEG = UVCCamera.FRAME_FORMAT_MJPEG;
-    public static int MODE_BRIGHTNESS = UVCCamera.PU_BRIGHTNESS;
-    public static int MODE_CONTRAST = UVCCamera.PU_CONTRAST;
+    public static final int FRAME_FORMAT_MJPEG = UVCCamera.FRAME_FORMAT_MJPEG;
+    public static final int MODE_BRIGHTNESS = UVCCamera.PU_BRIGHTNESS;
+    public static final int MODE_CONTRAST = UVCCamera.PU_CONTRAST;
+    private int mFrameFormat = FRAME_FORMAT_MJPEG;
 
     private static UVCCameraHelper mCameraHelper;
     // USB Manager
@@ -151,7 +152,7 @@ public class UVCCameraHelper {
         // initialize camera handler
         mCamView.setAspectRatio(previewWidth / (float)previewHeight);
         mCameraHandler = UVCCameraHandler.createHandler(mActivity, mCamView, 2,
-                previewWidth, previewHeight, FRAME_FORMAT_MJPEG);
+                previewWidth, previewHeight, mFrameFormat);
     }
 
     public void updateResolution(int width, int height) {
@@ -166,7 +167,7 @@ public class UVCCameraHelper {
         }
         mCamView.setAspectRatio(previewWidth / (float)previewHeight);
         mCameraHandler = UVCCameraHandler.createHandler(mActivity,mCamView, 2,
-                previewWidth, previewHeight, FRAME_FORMAT_MJPEG);
+                previewWidth, previewHeight, mFrameFormat);
         openCamera(mCtrlBlock);
         new Thread(new Runnable() {
             @Override
@@ -246,19 +247,25 @@ public class UVCCameraHelper {
         }
     }
 
-    public void startRecording(RecordParams params, AbstractUVCCameraHandler.OnEncodeResultListener listener) {
-        if (mCameraHandler != null && !isRecording()) {
+    public void startPusher(AbstractUVCCameraHandler.OnEncodeResultListener listener) {
+        if (mCameraHandler != null && !isPushing()) {
+            mCameraHandler.startRecording(null, listener);
+        }
+    }
+
+    public void startPusher(RecordParams params, AbstractUVCCameraHandler.OnEncodeResultListener listener) {
+        if (mCameraHandler != null && !isPushing()) {
             mCameraHandler.startRecording(params, listener);
         }
     }
 
-    public void stopRecording() {
-        if (mCameraHandler != null && isRecording()) {
+    public void stopPusher() {
+        if (mCameraHandler != null && isPushing()) {
             mCameraHandler.stopRecording();
         }
     }
 
-    public boolean isRecording() {
+    public boolean isPushing() {
         if (mCameraHandler != null) {
             return mCameraHandler.isRecording();
         }
@@ -330,6 +337,13 @@ public class UVCCameraHelper {
         }
         this.previewWidth = defaultWidth;
         this.previewHeight = defaultHeight;
+    }
+
+    public void setDefaultFrameFormat(int format) {
+        if(mUSBMonitor != null) {
+            throw new IllegalStateException("setDefaultFrameFormat should be call before initMonitor");
+        }
+        this.mFrameFormat = format;
     }
 
     public int getPreviewWidth() {

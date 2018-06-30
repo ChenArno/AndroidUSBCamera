@@ -139,6 +139,7 @@ public class USBCameraActivity extends AppCompatActivity implements CameraDialog
         mUVCCameraView = (CameraViewInterface) mTextureView;
         mUVCCameraView.setCallback(this);
         mCameraHelper = UVCCameraHelper.getInstance();
+        mCameraHelper.setDefaultFrameFormat(UVCCameraHelper.FRAME_FORMAT_YUYV);
         mCameraHelper.initUSBMonitor(this, mUVCCameraView, listener);
 
 
@@ -240,19 +241,20 @@ public class USBCameraActivity extends AppCompatActivity implements CameraDialog
                     showShortMsg("sorry,camera open failed");
                     return super.onOptionsItemSelected(item);
                 }
-                if (!mCameraHelper.isRecording()) {
+                if (!mCameraHelper.isPushing()) {
                     String videoPath = UVCCameraHelper.ROOT_PATH + System.currentTimeMillis();
-//                    FileUtils.createfile(FileUtils.ROOT_PATH + "test666.h264");
+                    FileUtils.createfile(FileUtils.ROOT_PATH + "test666.h264");
+                    // if you want to record,please create RecordParams like this
                     RecordParams params = new RecordParams();
                     params.setRecordPath(videoPath);
                     params.setRecordDuration(0);                        // 设置为0，不分割保存
                     params.setVoiceClose(mSwitchVoice.isChecked());    // is close voice
-                    mCameraHelper.startRecording(params, new AbstractUVCCameraHandler.OnEncodeResultListener() {
+                    mCameraHelper.startPusher(params, new AbstractUVCCameraHandler.OnEncodeResultListener() {
                         @Override
                         public void onEncodeResult(byte[] data, int offset, int length, long timestamp, int type) {
                             // type = 1,h264 video stream
                             if (type == 1) {
-//                                FileUtils.putFileStream(data, offset, length);
+                                FileUtils.putFileStream(data, offset, length);
                             }
                             // type = 0,aac audio stream
                             if(type == 0) {
@@ -265,11 +267,13 @@ public class USBCameraActivity extends AppCompatActivity implements CameraDialog
                             Log.i(TAG,"videoPath = "+videoPath);
                         }
                     });
+                    // if you only want to push stream,please call like this
+                    // mCameraHelper.startPusher(listener);
                     showShortMsg("start record...");
                     mSwitchVoice.setEnabled(false);
                 } else {
-//                    FileUtils.releaseFile();
-                    mCameraHelper.stopRecording();
+                    FileUtils.releaseFile();
+                    mCameraHelper.stopPusher();
                     showShortMsg("stop record...");
                     mSwitchVoice.setEnabled(true);
                 }
