@@ -363,8 +363,8 @@ public abstract class AbstractUVCCameraHandler extends Handler {
                 thread.handleStopPreview();
                 break;
             case MSG_CAPTURE_STILL:
-//				thread.handleCaptureStill((String)msg.obj);
-                thread.handleStillPicture((String) msg.obj);
+				thread.handleCaptureStill((String)msg.obj);
+                // thread.handleStillPicture((String) msg.obj);
                 break;
             case MSG_CAPTURE_START:
 //			thread.handleStartRecording((String)msg.obj);
