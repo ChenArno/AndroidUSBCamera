@@ -37,6 +37,11 @@ dependencies {
     compile("com.serenegiant:common:${commonLibVersion}") {
         exclude module: 'support-v4'
     }
+//    compile("com.serenegiant:common:1.5.20") {
+//        exclude module: 'support-v4'
+//    }
+
+
 }
 
 
