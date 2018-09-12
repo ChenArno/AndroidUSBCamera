@@ -20,6 +20,10 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+
+    lintOptions {
+        abortOnError false
+    }
 }
 
 
@@ -34,3 +38,29 @@ dependencies {
         exclude module: 'support-v4'
     }
 }
+
+
+
+//================jar打包====================
+def SDK_BASENAME = "vanzCamera";
+def sdkDestinationPath = "build";//生成jar存放目录
+def releaseJar = file('build/intermediates/bundles/release/classes.jar')
+//打包debug目录下的classes.jar
+def debugJar = file('build/intermediates/bundles/debug/classes.jar')
+
+task deleteBuild(type: Delete) {
+    delete sdkDestinationPath + SDK_BASENAME + ".jar" //sdk是你自己jar包的名字，随便命名
+}
+
+task makeJar(type: Jar) {
+    from zipTree(releaseJar)//从哪里打包class文件
+    exclude('**/BuildConfig.class')//排除不必要的class文件
+    baseName = SDK_BASENAME
+    destinationDir = file(sdkDestinationPath)
+}
+
+makeJar.dependsOn(deleteBuild, build)
+
+//运行脚本
+//1.命令行方式：在Terminal输入gradlew makeJar
+//2.图形界面方式：Gradle   :ModuleName Tasks   other   markJar
